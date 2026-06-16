@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+.venv/
+.uv/
+uv.lock
+checkpoints/
+outputs/

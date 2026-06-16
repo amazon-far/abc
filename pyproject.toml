@@ -1,0 +1,41 @@
+[project]
+name = "abc-minimal"
+version = "0.1.0"
+description = "Minimal end-to-end release for the abc dataset and the ABC-DiT (LBM) policy."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "numpy",
+    "torch==2.11.0+cu128",
+    "torchcodec==0.11.0+cpu",
+    "mujoco",
+    "mujoco-warp",
+    "warp-lang",
+    "mjviser",
+    "viser",
+    "imageio[ffmpeg]",
+    "ftfy",
+    "regex",
+    # tyro powers the dataclass CLI configs.
+    "tyro",
+    # mcap-protobuf-support already pulls in mcap, but list it explicitly
+    # so users who only run export_mcap.py see the dep up front.
+    "mcap",
+    "mcap-protobuf-support",
+    # Optional: W&B logging in train.py (off by default; --log-wandb to enable).
+    "wandb",
+]
+
+[tool.uv.sources]
+torch = { index = "pytorch-cu128" }
+torchcodec = { index = "pytorch-cpu" }
+
+[[tool.uv.index]]
+name = "pytorch-cu128"
+url = "https://download.pytorch.org/whl/cu128"
+explicit = true
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true

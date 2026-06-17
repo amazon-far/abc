@@ -2,13 +2,9 @@
 # requires-python = ">=3.10"
 # dependencies = ["tyro"]
 # ///
-"""Download and unpack the public abc bottles-in-bin dataset.
-
-Fetches preview or full tars plus normalization stats into ABC_CACHE.
-"""
+"""Download and unpack the public abc bottles-in-bin dataset."""
 
 import json
-import os
 import shutil
 import sys
 import tarfile
@@ -20,8 +16,10 @@ from typing import Annotated
 
 import tyro
 
+from abc_minimal.config import default_cache_root
+
 DATA_BASE = "https://abc-data.timehorizons.org"
-DEFAULT_CACHE = Path(os.environ.get("ABC_CACHE", "/tmp/abc_minimal_cache"))
+DEFAULT_CACHE = default_cache_root()
 HTTP_HEADERS = {"User-Agent": "abc-prepare/1.0"}
 
 SMALL_FILES = [
@@ -33,6 +31,11 @@ FULL_TARS = [
     "dataset/dataset_preview/bottles_in_bin_real.tar",
     "dataset/dataset_preview/bottles_in_bin_sim.tar",
 ]
+
+# Pretrained 75k from-scratch bottles policy (model-only, fp32 weights, ~7.7 GB).
+# Lands at cache/bottles_75k.pt by default; override with ABC_CACHE.
+CHECKPOINT_KEY = "checkpoints/bottles_release_prep_75k.pt"
+CHECKPOINT_DST = "bottles_75k.pt"
 
 
 @dataclass
@@ -47,9 +50,13 @@ class PrepareConfig:
         bool,
         tyro.conf.arg(help="Leave tars on disk without extracting them."),
     ] = False
+    checkpoint: Annotated[
+        bool,
+        tyro.conf.arg(help="Download the 7.7 GB pretrained 75k bottles policy."),
+    ] = False
     cache: Annotated[
         Path,
-        tyro.conf.arg(help=f"Where to put files; defaults to $ABC_CACHE or {DEFAULT_CACHE}."),
+        tyro.conf.arg(help=f"Where to put files; defaults to ABC_CACHE or {DEFAULT_CACHE}."),
     ] = DEFAULT_CACHE
 
 
@@ -138,7 +145,7 @@ def download(key, dst):
 
 
 def extract_tar(tar_path, cache):
-    """Untar bottles_in_bin_*.tar into $ABC_CACHE with a progress bar.
+    """Untar bottles_in_bin_*.tar into the cache dir with a progress bar.
 
     Tar layout: ``train/<eid>/...``, ``val/<eid>/...``. Each episode's
     metadata.json is read first; episodes whose ``task_name`` starts with
@@ -224,6 +231,10 @@ def main(config: PrepareConfig):
 
     tars = FULL_TARS if config.full else [PREVIEW_TAR]
     fetch_tars(cache, tars, skip_extract=config.skip_extract)
+
+    if config.checkpoint:
+        print(f"[checkpoint] {CHECKPOINT_KEY}")
+        download(CHECKPOINT_KEY, cache / CHECKPOINT_DST)
 
     print("\n[done] cache layout:")
     for entry in sorted(cache.iterdir()):

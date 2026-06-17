@@ -1,0 +1,27 @@
+<mujoco model="bottled_drink_7">
+  <asset>
+    <mesh file="visual/model_normalized_0.obj" name="model_normalized_0_vis" scale="0.16499999999999998 0.16499999999999998 0.16499999999999998" refquat="1.0 0.0 0.0 0.0"/>
+    <texture type="2d" name="image0" file="visual/image0.png"/>
+    <material name="Scene_-_Root.008" texture="image0" specular="0.5" shininess="0.25"/>
+    <mesh file="collision/collision_mesh_collision_0.obj" name="bottled_collision_mesh_0" scale="0.16499999999999998 0.16499999999999998 0.16499999999999998" refquat="1.0 0.0 0.0 0.0"/>
+    <mesh file="collision/collision_mesh_collision_1.obj" name="bottled_collision_mesh_1" scale="0.16499999999999998 0.16499999999999998 0.16499999999999998" refquat="1.0 0.0 0.0 0.0"/>
+  </asset>
+  <default>
+    <default class="region">
+      <geom group="1" conaffinity="0" contype="0" rgba="0 1 0 0"/>
+    </default>
+    <default class="collision">
+      <geom group="0" rgba="0.5 0 0 0.5" density="1000.0"/>
+    </default>
+  </default>
+  <worldbody>
+    <body>
+      <body name="object">
+        <geom solimp="0.998 0.998 0.001" solref="0.001 1" density="100" friction="0.95 0.3 0.1" type="mesh" mesh="model_normalized_0_vis" conaffinity="0" contype="0" group="1" material="Scene_-_Root.008"/>
+        <geom class="region" name="reg_bbox" type="box" pos="-2.474999998697269e-09 -2.124374999999262e-06 6.299700000000712e-05" size="0.023687381024999996 0.023689331324999997 0.08334450629999998"/>
+        <geom mesh="bottled_collision_mesh_0" type="mesh" class="collision"/>
+        <geom mesh="bottled_collision_mesh_1" type="mesh" class="collision"/>
+      </body>
+    </body>
+  </worldbody>
+</mujoco>

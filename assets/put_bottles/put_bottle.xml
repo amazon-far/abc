@@ -166,6 +166,17 @@
     <mesh file="task_water_bottles/bottle/bottle_3/collision/collision_mesh_collision_5.obj" name="bottle_3_bottle_3_bottled_collision_mesh_5" scale="0.15999999999999998 0.15999999999999998 0.15999999999999998" refquat="1.0 0.0 0.0 0.0" />
     <mesh file="task_water_bottles/bottle/bottle_3/collision/collision_mesh_collision_6.obj" name="bottle_3_bottle_3_bottled_collision_mesh_6" scale="0.15999999999999998 0.15999999999999998 0.15999999999999998" refquat="1.0 0.0 0.0 0.0" />
     <mesh file="task_water_bottles/bottle/bottle_3/collision/collision_mesh_collision_7.obj" name="bottle_3_bottle_3_bottled_collision_mesh_7" scale="0.15999999999999998 0.15999999999999998 0.15999999999999998" refquat="1.0 0.0 0.0 0.0" />
+  <mesh file="task_water_bottles/bottle/bottle_4/visual/model_normalized_0.obj" name="bottle_4_bottle_4_model_normalized_0_vis" scale="0.16499999999999998 0.16499999999999998 0.16499999999999998" refquat="1.0 0.0 0.0 0.0" />
+    <texture type="2d" name="bottle_4_bottle_4_image0" file="task_water_bottles/bottle/bottle_4/visual/image0.png" />
+    <material name="bottle_4_bottle_4_Scene_-_Root.008" texture="bottle_4_bottle_4_image0" specular="0.5" shininess="0.25" />
+    <mesh file="task_water_bottles/bottle/bottle_4/collision/collision_mesh_collision_0.obj" name="bottle_4_bottle_4_bottled_collision_mesh_0" scale="0.16499999999999998 0.16499999999999998 0.16499999999999998" refquat="1.0 0.0 0.0 0.0" />
+    <mesh file="task_water_bottles/bottle/bottle_4/collision/collision_mesh_collision_1.obj" name="bottle_4_bottle_4_bottled_collision_mesh_1" scale="0.16499999999999998 0.16499999999999998 0.16499999999999998" refquat="1.0 0.0 0.0 0.0" />
+  <mesh file="task_water_bottles/bottle/bottle_7/visual/model_normalized_0.obj" name="bottle_7_bottle_7_model_normalized_0_vis" scale="0.16 0.16 0.16" refquat="1.0 0.0 0.0 0.0" />
+    <texture type="2d" name="bottle_7_bottle_7_image0" file="task_water_bottles/bottle/bottle_7/visual/image0.png" />
+    <material name="bottle_7_bottle_7_Material.049" texture="bottle_7_bottle_7_image0" specular="0.5" shininess="0.25" />
+    <mesh file="task_water_bottles/bottle/bottle_7/collision/collision_mesh_collision_0.obj" name="bottle_7_bottle_7_bottled_collision_mesh_0" scale="0.16 0.16 0.16" refquat="1.0 0.0 0.0 0.0" />
+    <mesh file="task_water_bottles/bottle/bottle_7/collision/collision_mesh_collision_1.obj" name="bottle_7_bottle_7_bottled_collision_mesh_1" scale="0.16 0.16 0.16" refquat="1.0 0.0 0.0 0.0" />
+    <mesh file="task_water_bottles/bottle/bottle_7/collision/collision_mesh_collision_2.obj" name="bottle_7_bottle_7_bottled_collision_mesh_2" scale="0.16 0.16 0.16" refquat="1.0 0.0 0.0 0.0" />
   </asset>
 
   <worldbody>
@@ -522,6 +533,17 @@
         <geom mesh="bottle_3_bottle_3_bottled_collision_mesh_5" type="mesh" density="0" group="3" rgba="0 0 0 0" friction="3.0 0.03 0.003" condim="6" solref="0.004 1" solimp="0.998 0.998 0.001" priority="1" />
         <geom mesh="bottle_3_bottle_3_bottled_collision_mesh_6" type="mesh" density="0" group="3" rgba="0 0 0 0" friction="3.0 0.03 0.003" condim="6" solref="0.004 1" solimp="0.998 0.998 0.001" priority="1" />
         <geom mesh="bottle_3_bottle_3_bottled_collision_mesh_7" type="mesh" density="0" group="3" rgba="0 0 0 0" friction="3.0 0.03 0.003" condim="6" solref="0.004 1" solimp="0.998 0.998 0.001" priority="1" />
+      </body>
+    </body><body name="bottle_5" pos="0.62 0.38 0.754"><freejoint name="bottle_5_joint" /><body name="bottle_4_bottle_4_object">
+        <inertial pos="0 0 0" mass="0.05" diaginertia="0.00012679617 0.00012679183 2.1964781e-05" /><geom solimp="0.998 0.998 0.001" solref="0.001 1" density="0" friction="0.95 0.3 0.1" type="mesh" mesh="bottle_4_bottle_4_model_normalized_0_vis" conaffinity="0" contype="0" group="2" material="bottle_4_bottle_4_Scene_-_Root.008" />
+        <geom mesh="bottle_4_bottle_4_bottled_collision_mesh_0" type="mesh" density="0" group="3" rgba="0 0 0 0" friction="3.0 0.03 0.003" condim="6" solref="0.004 1" solimp="0.998 0.998 0.001" priority="1" />
+        <geom mesh="bottle_4_bottle_4_bottled_collision_mesh_1" type="mesh" density="0" group="3" rgba="0 0 0 0" friction="3.0 0.03 0.003" condim="6" solref="0.004 1" solimp="0.998 0.998 0.001" priority="1" />
+      </body>
+    </body><body name="bottle_6" pos="0.78 0.38 0.754"><freejoint name="bottle_6_joint" /><body name="bottle_7_bottle_7_object">
+        <inertial pos="0 0 0" mass="0.05" diaginertia="0.00011789572 0.00011824638 2.2808766e-05" /><geom solimp="0.998 0.998 0.001" solref="0.001 1" density="0" friction="0.95 0.3 0.1" type="mesh" mesh="bottle_7_bottle_7_model_normalized_0_vis" conaffinity="0" contype="0" group="2" material="bottle_7_bottle_7_Material.049" />
+        <geom mesh="bottle_7_bottle_7_bottled_collision_mesh_0" type="mesh" density="0" group="3" rgba="0 0 0 0" friction="3.0 0.03 0.003" condim="6" solref="0.004 1" solimp="0.998 0.998 0.001" priority="1" />
+        <geom mesh="bottle_7_bottle_7_bottled_collision_mesh_1" type="mesh" density="0" group="3" rgba="0 0 0 0" friction="3.0 0.03 0.003" condim="6" solref="0.004 1" solimp="0.998 0.998 0.001" priority="1" />
+        <geom mesh="bottle_7_bottle_7_bottled_collision_mesh_2" type="mesh" density="0" group="3" rgba="0 0 0 0" friction="3.0 0.03 0.003" condim="6" solref="0.004 1" solimp="0.998 0.998 0.001" priority="1" />
       </body>
     </body></worldbody>
 

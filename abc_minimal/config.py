@@ -7,6 +7,14 @@ from pathlib import Path
 from typing import Literal
 
 
+REPO_ROOT = Path(__file__).resolve().parents[1]
+DEFAULT_CACHE_ROOT = REPO_ROOT / "cache"
+
+
+def default_cache_root() -> Path:
+    return Path(os.environ.get("ABC_CACHE", str(DEFAULT_CACHE_ROOT))).expanduser()
+
+
 @dataclass
 class OptimConfig:
     """AdamW with a linear-warmup-then-constant LR schedule."""
@@ -75,6 +83,40 @@ class DiTConfig:
     vision_pool_mlp_ratio: int = 4
 
 
+@dataclass
+class PutBottlesSimConfig:
+    """Scene, randomization, and task metric defaults for put-bottles sim eval."""
+    gripper_ctrl_max: float = 0.0475
+    bottle_count: int = 6
+    init_q: tuple[float, ...] = (
+        0.0, 1.047, 1.047, 0.0, 0.0, 0.0, 0.0,
+        0.0, 1.047, 1.047, 0.0, 0.0, 0.0, 0.0,
+    )
+    timestep: float = 0.002
+    control_decimation: int = 17
+
+    table_z: float = 0.75
+    table_bounds: tuple[float, float, float, float] = (0.3025, 0.8975, -0.65, 0.65)
+    bottle_spawn_clearance: float = 0.005
+    bottle_sample_attempts: int = 200
+    bottle_collision_margin: float = 0.04
+    bottle_scale_range: tuple[float, float] = (0.9, 1.1)
+    bottle_side_radii: tuple[float, ...] = (0.025667, 0.024014, 0.020589, 0.026359, 0.023689, 0.021823)
+    bottle_flat_lengths: tuple[float, ...] = (0.166718, 0.165000, 0.156531, 0.160000, 0.166689, 0.159200)
+    bottle_flat_half_widths: tuple[float, ...] = (0.025672, 0.024013, 0.020566, 0.025957, 0.023689, 0.021823)
+
+    bin_scale_range: tuple[float, float] = (0.95, 1.05)
+    bin_yaw_range: tuple[float, float] = (-0.75, 0.75)
+    bin_xy_range: tuple[float, float, float, float] = (0.57, 0.73, -0.25, 0.25)
+    bin_z_scale: float = 0.83
+    bin_occupied_radius: float = 0.13
+    bin_base_quat: tuple[float, float, float, float] = (0.70710678, 0.70710678, 0.0, 0.0)
+
+    eval_bin_radius: float = 0.155
+    eval_min_rel_z: float = -0.06
+    eval_max_rel_z: float = 0.26
+
+
 # Reference hours-weighted real+sim bottles mix.
 MIXTURE_PRESETS: dict[str, list[MixtureComponent]] = {
     "bottles": [
@@ -88,7 +130,7 @@ MIXTURE_PRESETS: dict[str, list[MixtureComponent]] = {
 class TrainConfig:
     """Minimal ABC-DiT bottles-in-bin training."""
     cache_root: str = field(
-        default_factory=lambda: os.environ.get("ABC_CACHE", "/tmp/abc_minimal_cache")
+        default_factory=lambda: str(default_cache_root())
     )
     seed: int = 123
     batch_size: int = 90
@@ -130,7 +172,7 @@ class SimEvalConfig:
     )
     num_worlds: int = 5
     seed: int = 20260511
-    num_chunks: int = 60
+    num_chunks: int = 120
     execute_chunk_dim: int = 15
     diffusion_steps: int = 10
     policy_seed: int = 0
@@ -138,20 +180,33 @@ class SimEvalConfig:
     camera_width: int = 224
     device: str = "auto"
     gpu_id: int | None = None
+    fast_inference: bool = True
+    fast_compile_mode: str = "max-autotune-no-cudagraphs"
+    vanilla_physics: bool = False
+    rtc: bool = False
+    rtc_prefix_length: int = 4
+    rtc_inference_lead_steps: int = 4
     log_every_chunk: bool = False
     save_video: bool = False
     video_fps: int = 30
     video_every_n_actions: int = 1
     prompt: str = "sim put the plastic bottles in the bin"
 
+    scene: PutBottlesSimConfig = field(default_factory=PutBottlesSimConfig)
     clip: ClipConfig = field(default_factory=ClipConfig)
     model: DiTConfig = field(default_factory=DiTConfig)
 
 
 @dataclass
+class VizSimEvalConfig(SimEvalConfig):
+    """Single-world sim config defaults for the live Viser viewer."""
+    num_chunks: int = 200
+
+
+@dataclass
 class VizPolicyConfig:
     """Live viser viewer over a single ABC-DiT sim rollout."""
-    sim: SimEvalConfig
+    sim: VizSimEvalConfig
     port: int = 8080
     fast_inference: bool = True
     fast_compile_mode: str = "max-autotune-no-cudagraphs"

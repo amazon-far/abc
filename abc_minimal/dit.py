@@ -837,6 +837,44 @@ class DiTPolicy(nn.Module):
             x_t = x_t + v * dt
         return x_t
 
+    @torch.no_grad()
+    def sample_actions_rtc(self, batch, action_prefix, prefix_length: int, num_steps=10, noise=None):
+        """Euler sampling with per-position action-prefix conditioning."""
+        state = batch["state"]
+        B = state.shape[0]
+        model_dtype = self.y_embedder.weight.dtype
+        if noise is None:
+            noise = torch.randn(
+                B,
+                self.chunk_length,
+                self.action_dim,
+                device=state.device,
+                dtype=model_dtype,
+            )
+        x_t = noise.to(device=state.device, dtype=model_dtype)
+        action_prefix = action_prefix.to(device=state.device, dtype=model_dtype)
+
+        prefix_pos = torch.arange(self.chunk_length, device=state.device) < prefix_length
+        prefix_mask = prefix_pos.view(1, self.chunk_length, 1).expand_as(x_t)
+        prefix_t_mask = prefix_pos.view(1, self.chunk_length).expand(B, self.chunk_length)
+        x_t = torch.where(prefix_mask, action_prefix, x_t)
+
+        vision_tokens = self.build_vision_tokens(batch["images"])
+        dt = -1.0 / num_steps
+        for i in range(num_steps):
+            t = torch.full(
+                (B, self.chunk_length),
+                1.0 + i * dt,
+                device=state.device,
+                dtype=model_dtype,
+            )
+            t = torch.where(prefix_t_mask, torch.zeros_like(t), t)
+            c = self.compute_cond(state, batch["task_vec_clip"], t)
+            v = self.predict_velocity(x_t, c, vision_tokens)
+            x_t = x_t + v * dt
+            x_t = torch.where(prefix_mask, action_prefix, x_t)
+        return x_t
+
 
 def load_pretrained(model, ckpt_path):
     """Load the slim production checkpoint (model-only, prefixes stripped)."""

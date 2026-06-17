@@ -2,6 +2,7 @@ __pycache__/
 *.pyc
 .venv/
 .uv/
+cache/
 uv.lock
 checkpoints/
 outputs/

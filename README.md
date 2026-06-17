@@ -111,7 +111,9 @@ To visualize the policy live:
 uv run viz_policy.py --sim.checkpoint cache/bottles_75k.pt --port 8080
 ```
 
-opens a viser window at `localhost:8080`.
+opens a viser window at `localhost:8080`. It should look like this:
+
+![](assets/sim_eval.gif)
 
 `eval_policy.py` runs a more systematic evaluation:
 

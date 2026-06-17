@@ -158,6 +158,21 @@ downloading.
 Download all MCAPs for one task and convert them in place:
 
 ```bash
+uv run export_hf_task.py --task organize_the_condiment_bottles
+```
+
+By default this downloads both `train` and `val`, stages raw MCAPs under
+`$ABC_CACHE/hf_tasks/<task>/`, runs `export_mcap.py`, writes converted episodes
+to `$ABC_CACHE/train_real/` and `$ABC_CACHE/val_real/`, then deletes the staged
+raw MCAPs after each successful split conversion. For a quick smoke test:
+
+```bash
+uv run export_hf_task.py --task organize_the_condiment_bottles --split train --max-episodes 1
+```
+
+If you already have local MCAPs, call the lower-level converter directly:
+
+```bash
 uv run export_mcap.py ./train_run_1 ./out
 ```
 

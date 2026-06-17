@@ -3,7 +3,7 @@
 <p align="center">
   <strong>
     <a href="https://abc.bot">Project Website</a> |
-    <a href="todo">Paper</a> |
+    <a href="https://abc.bot/abc.pdf">Paper</a> |
     <a href="https://huggingface.co/datasets/XDOF/ABC-130k">Raw Data</a>
   </strong>
 </p>

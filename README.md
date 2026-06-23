@@ -133,7 +133,7 @@ Useful flags:
 
 - `--num-worlds N` — independent random scenes (default 5).
 - `--num-chunks N` — action chunks per rollout; each chunk is
-`--execute-chunk-dim` actions (defaults: 60 chunks × 15 = 900 sim steps).
+`--execute-chunk-dim` actions (defaults: 120 chunks × 15 = 1800 sim steps).
 - `--diffusion-steps N` — flow-matching Euler steps per inference
 (default 10, matches production).
 - `--checkpoint` — accepts a local `.pt` path or `s3://…/<file>.pt`.
@@ -142,10 +142,10 @@ one bundled in the checkpoint).
 - `--fast-inference` / `--no-fast-inference` (default on) — bf16 +
 torch.compile + CUDA-graph captured `sample_actions`. ~5× faster
 inference; first call pays a one-time ~25 s compile cost.
-- `--vanilla-physics` / `--no-vanilla-physics` (default on) — use
-vanilla CPU `mujoco.mj_step` for env physics instead of single-world
-mjwarp.  This is because for single environments, it's faster to
-use vanilla mujoco. Rendering still happens in MJWarp.
+- `--vanilla-physics` / `--no-vanilla-physics` (default off) — enable
+vanilla CPU `mujoco.mj_step` for env physics instead of the default
+single-world mjwarp path.  This is because for single environments, it's
+faster to use vanilla mujoco. Rendering still happens in MJWarp.
 
 Note that the first launch compiles MJWarp's CUDA kernels (~1 min).
 

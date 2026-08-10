@@ -1,6 +1,6 @@
 # /// script
 # requires-python = ">=3.10"
-# dependencies = ["numpy", "mcap", "mcap-protobuf-support", "tyro"]
+# dependencies = ["numpy", "mcap", "mcap-protobuf-support", "mujoco", "tyro"]
 # ///
 """Convert release-format MCAP episodes into the training data layout.
 
@@ -63,6 +63,12 @@ class ExportMcapConfig:
     root: Annotated[Path, tyro.conf.Positional]
     out_dir: Annotated[Path, tyro.conf.Positional]
     workers: Annotated[int, tyro.conf.Positional] = 4
+    derive_ee_poses: Annotated[
+        bool,
+        tyro.conf.arg(
+            help="Write arm-local YAM grasp poses to end_effector_poses.npz."
+        ),
+    ] = False
 
 
 def floor_indices(source_ts, target_ts):
@@ -110,8 +116,18 @@ def encode_aligned(h264_path, width, height, needed, out_path):
             raise RuntimeError("ffmpeg encode failed")
 
 
+def _unpack_export_job(job):
+    """Accept current jobs and the historical three-item direct-call form."""
+    if len(job) == 3:
+        mcap_path, task_name, out_root = job
+        return mcap_path, task_name, out_root, False
+    if len(job) == 4:
+        return job
+    raise ValueError(f"export job must contain 3 or 4 items, got {len(job)}")
+
+
 def export_episode(job):
-    mcap_path, task_name, out_root = job
+    mcap_path, task_name, out_root, derive_ee_poses = _unpack_export_job(job)
     from mcap.reader import make_reader
     from mcap_protobuf.decoder import DecoderFactory
 
@@ -213,6 +229,10 @@ def export_episode(job):
             "camera_resolutions": {k: [OUT_W, OUT_H] for k, _ in active_cams},
             "alignment": "fixed_clock_30hz_causal", "t0_ns": int(t0), "tick_ns": TICK_NS,
             "num_steps": num_steps}
+    if derive_ee_poses:
+        from abc_minimal.end_effector_poses import write_end_effector_sidecar
+
+        meta["end_effector_poses"] = write_end_effector_sidecar(out_dir, scalars, ticks)
     (out_dir / "episode_metadata.json").write_text(json.dumps(meta, indent=2))
     print(f"[OK] {ep_id}: {num_steps} steps, cams={[k for k, _ in active_cams]}")
     return ep_id
@@ -220,7 +240,7 @@ def export_episode(job):
 
 def main(config: ExportMcapConfig):
     jobs = sorted(
-        (str(p), p.parent.parent.name, str(config.out_dir))
+        (str(p), p.parent.parent.name, str(config.out_dir), config.derive_ee_poses)
         for p in config.root.glob("*/episode_*/episode.mcap")
     )
     print(f"{len(jobs)} episodes")

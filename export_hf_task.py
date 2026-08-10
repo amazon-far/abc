@@ -1,6 +1,6 @@
 # /// script
 # requires-python = ">=3.10"
-# dependencies = ["numpy", "mcap", "mcap-protobuf-support", "tyro"]
+# dependencies = ["numpy", "mcap", "mcap-protobuf-support", "mujoco", "tyro"]
 # ///
 """Export one ABC-130k Hugging Face task to the training format."""
 
@@ -43,6 +43,12 @@ class Config:
     max_episodes: Annotated[int | None, tyro.conf.arg(help="Optional per-split cap for smoke tests.")] = None
     dry_run: Annotated[bool, tyro.conf.arg(help="List only; do not download or convert.")] = False
     keep_mcaps: Annotated[bool, tyro.conf.arg(help="Keep staged raw MCAPs after conversion.")] = False
+    derive_ee_poses: Annotated[
+        bool,
+        tyro.conf.arg(
+            help="Write arm-local YAM grasp poses to end_effector_poses.npz."
+        ),
+    ] = False
 
 
 def token(cfg: Config) -> str | None:
@@ -167,6 +173,8 @@ def write_manifest(cfg: Config, split: str, files: list[dict], root: Path) -> No
 
 def convert(cfg: Config, split: str, root: Path) -> None:
     cmd = [sys.executable, "export_mcap.py", str(root), str((cfg.cache / f"{split}_real").expanduser()), str(cfg.workers)]
+    if cfg.derive_ee_poses:
+        cmd.append("--derive-ee-poses")
     print("[convert]", " ".join(cmd))
     subprocess.run(cmd, check=True)
 

@@ -193,6 +193,25 @@ You can also pass the number of worker processes:
 uv run export_mcap.py ./train_run_1 ./out 8
 ```
 
+To derive YAM grasp-site poses from the recorded six-joint arm telemetry, opt
+in with `--derive-ee-poses` on either exporter:
+
+```bash
+uv run export_hf_task.py \
+  --task organize_the_condiment_bottles \
+  --derive-ee-poses
+
+# Or, for already-downloaded MCAPs:
+uv run export_mcap.py ./train_run_1 ./out 4 --derive-ee-poses
+```
+
+This flag writes a separate `end_effector_poses.npz` sidecar. It does not
+change `states_actions.bin`, the video, or any legacy output when the flag is
+off. Poses are computed with MuJoCo from the official bundled i2rt YAM
+`grasp_site` and are always expressed in each arm's **local base frame**. The
+exporter intentionally does not guess a transform between the left and right
+arm bases.
+
 Each output episode is written to `./out/episode_<uuid>/` in the same format
 the trainer reads:
 
@@ -201,7 +220,23 @@ episode_<uuid>/
   states_actions.bin               # (num_steps, 28) float64: 14 states + 14 actions
   combined_camera-images-rgb.mp4   # 30 fps vertical stack of 224x224 camera views
   episode_metadata.json            # task name, cameras, resolutions, timing, num_steps
+  end_effector_poses.npz            # optional; present only with --derive-ee-poses
 ```
+
+The optional NPZ uses schema `abc.end_effector_poses.v1` and contains:
+
+- `left_arm_state_pose`, `right_arm_state_pose`, `left_arm_action_pose`, and
+  `right_arm_action_pose`: `(num_steps, 7)` float64 arrays in
+  `[x, y, z, qw, qx, qy, qz]` order (metres, scalar-first quaternion).
+- `timestamp_ns`: the aligned 30 Hz timestamps as int64 nanoseconds.
+- `valid_mask`: one uint8 per step. Bits 0–3 correspond to the four pose
+  arrays in the order above. A bit is set only when that raw six-joint topic
+  supplied a finite source sample. Missing or malformed source topics produce
+  NaN poses with an unset bit; the legacy zero-padding is never fed to FK.
+
+When enabled, `episode_metadata.json` also records the sidecar schema, array
+and bit assignments, arm-local frame and units, derivation provenance, bundled
+model path, and SHA-256 of the exact `yam.xml` used.
 
 The mp4 is encoded in a manner that allows for efficient dataloading. For details, see the ABC paper.
 

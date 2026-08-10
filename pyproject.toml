@@ -26,6 +26,11 @@ dependencies = [
     "wandb",
 ]
 
+[dependency-groups]
+dev = [
+    "pytest>=8",
+]
+
 [tool.uv.sources]
 torch = { index = "pytorch-cu128" }
 torchcodec = { index = "pytorch-cpu" }

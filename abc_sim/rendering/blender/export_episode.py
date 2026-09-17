@@ -79,7 +79,9 @@ def main():
     exporter.save_scene(filetype="usdc")
 
     meta = {
-        "name": out.name, "task": meta_in.get("task_name"), "prompt": meta_in.get("instruction"),
+        # Sequence tasks carry a prompt_timeline instead of one instruction.
+        "name": out.name, "task": meta_in.get("task_name"),
+        "prompt": meta_in.get("instruction") or (meta_in.get("prompt_timeline") or [{}])[0].get("prompt"),
         "episode_id": meta_in.get("episode_id", episode.name), "source": "dataset episode",
         "start_frame": args.start, "end_frame": end, "frames": end - args.start, "fps": fps,
         "active_wrist": args.active_wrist, "third_camera": args.third_camera,

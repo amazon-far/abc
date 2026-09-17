@@ -2,6 +2,7 @@
 """
 
 import json
+from bisect import bisect_right
 from dataclasses import dataclass
 from functools import partial
 from pathlib import Path
@@ -85,6 +86,7 @@ def scan_episodes(
 ):
     """Return episode metadata needed for frame sampling and video splitting."""
     episodes = []
+    unlabelled = []
     row_width = model_config.state_dim + model_config.action_dim
     for ep_dir in sorted(Path(data_dir).iterdir()):
         bin_path = ep_dir / "states_actions.bin"
@@ -99,11 +101,40 @@ def scan_episodes(
             meta = json.loads((ep_dir / "episode_metadata.json").read_text())
         cams = meta.get("cameras") or model_config.camera_keys
         task_name = meta.get("task_name") or default_task_name
-        episodes.append(
-            (ep_dir, length, usable, tuple(cams), task_name,
-             _episode_prompt(ep_dir, meta, task_name))
-        )
+        timeline = _prompt_timeline(ep_dir, meta, task_name)
+        if timeline is None:
+            unlabelled.append(ep_dir.name)
+            continue
+        episodes.append((ep_dir, length, usable, tuple(cams), task_name, timeline))
+    if unlabelled:
+        print(f"[prompt] {Path(data_dir).name}: skipped {len(unlabelled)} episode(s) the "
+              f"release could not label ({', '.join(unlabelled[:3])})", flush=True)
     return episodes
+
+
+def _prompt_timeline(ep_dir, meta, task_name):
+    """The episode's prompts as ``((frame, prompt), ...)``, each holding from its
+    frame until the next.
+
+    Sequence tasks (sim ``multi_drawer_search``) prompt 2-4 targets in order and
+    advance mid-episode, so they carry a ``prompt_timeline``; every other episode
+    gets the single entry ``_episode_prompt`` derives. There is deliberately no
+    whole-episode prompt: collapsing a timeline to one string is what labelled
+    every drawer frame with the first target. None means the release could not
+    reconstruct this episode's timeline, so the caller drops it.
+    """
+    timeline = meta.get("prompt_timeline")
+    if timeline:
+        return tuple((int(e["frame"]), e["prompt"]) for e in timeline)
+    if meta.get("prompt_source", {}).get("status") == "excluded":
+        return None
+    return ((0, _episode_prompt(ep_dir, meta, task_name) or task_name_to_prompt(task_name)),)
+
+
+def _prompt_at(timeline, frame_idx):
+    """The prompt holding at frame ``frame_idx``."""
+    frames = [frame for frame, _ in timeline]
+    return timeline[max(bisect_right(frames, int(frame_idx)) - 1, 0)][1]
 
 
 def _episode_prompt(ep_dir, meta, task_name):
@@ -305,7 +336,7 @@ class EpisodeDataset(Dataset):
     def __getitem__(self, global_idx):
         ep_idx = int(np.searchsorted(self.cum, global_idx, side="right"))
         k = int(global_idx - (self.cum[ep_idx - 1] if ep_idx > 0 else 0))
-        ep_dir, length, _, source_cameras, task_name, recorded_prompt = self.episodes[ep_idx]
+        ep_dir, length, _, source_cameras, task_name, prompt_timeline = self.episodes[ep_idx]
 
         rows = read_state_action_rows(
             ep_dir, k, k + self.model_config.chunk_length, self.model_config
@@ -325,7 +356,7 @@ class EpisodeDataset(Dataset):
             norm_preset=self.norm_preset,
             image_size=self.image_size,
         )
-        prompt = self.build_prompt(ep_dir, k, task_name, recorded_prompt)
+        prompt = self.build_prompt(ep_dir, k, task_name, prompt_timeline)
         return {
             "state": torch.from_numpy(state),
             "actions": torch.from_numpy(actions),
@@ -334,12 +365,11 @@ class EpisodeDataset(Dataset):
             "prompt": prompt,
         }
 
-    def build_prompt(self, ep_dir, frame_idx, task_name, recorded_prompt=None):
-        """Compose the text prompt from the episode's recorded directive (when
-        it has one -- see _episode_prompt) or the task name, plus optional
-        subtask and operator labels.
+    def build_prompt(self, ep_dir, frame_idx, task_name, prompt_timeline):
+        """Compose the text prompt for one frame: the episode's prompt at that
+        frame (see _prompt_timeline), plus optional subtask and operator labels.
         """
-        base = recorded_prompt or task_name_to_prompt(task_name)
+        base = _prompt_at(prompt_timeline, frame_idx)
         prompt = self._apply_subtask(base, ep_dir, frame_idx)
         prompt = self._apply_operator(prompt, ep_dir, task_name)
         return prompt

@@ -414,8 +414,10 @@ inverted-convention and directive-relabel history behind nuts_bolts_sorting
 and put_relative is documented in their evaluator docstrings.
 
 How each training prompt is derived (and why eval must match it): an episode's
-`episode_metadata.json` `instruction` field wins when it carries a real
-directive; otherwise the dataset `task_name` with underscores as spaces. Two
+`episode_metadata.json` `prompt_timeline` wins when it has one, resolved per
+frame -- `multi_drawer_search` advances through 2-4 targets mid-episode; else
+`instruction` when that carries a real directive; otherwise the dataset
+`task_name` with underscores as spaces. Two
 historical traps worth knowing: the 200k parent pretrained the put-bottles
 scene under the THROW wording (`sim throw plastic bottles in bin`) and
 dishrack under `sim load plates into tabletop dish rack` -- those sidecar

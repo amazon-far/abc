@@ -84,3 +84,18 @@ class TaskEvaluator(Protocol):
 
     def evaluate_qpos_batch(self, qpos_batch: np.ndarray) -> TaskEvalResult:
         """Evaluate reward/success for a qpos batch of shape ``(B, nq)``."""
+
+
+def evaluate_task_batch(
+    evaluator: TaskEvaluator, qpos: np.ndarray, simulation_time: np.ndarray
+) -> TaskEvalResult:
+    """Pass simulator timestamps to evaluators with a timed scoring hook.
+
+    Pose-only evaluators retain their existing interface. Stateful dwell tasks
+    implement ``evaluate_timed_qpos_batch(qpos, simulation_time)`` so polling
+    cannot advance their timers and different physics rates score consistently.
+    """
+    timed = getattr(evaluator, "evaluate_timed_qpos_batch", None)
+    if timed is not None:
+        return timed(qpos, simulation_time)
+    return evaluator.evaluate_qpos_batch(qpos)

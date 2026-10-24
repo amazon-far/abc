@@ -68,6 +68,10 @@ _SCENE_TASKS: tuple[SceneTaskSpec, ...] = (
         scene_xml=_MODELS_DIR / "yam_multi_drawer_search_scene.xml",
     ),
     SceneTaskSpec(name="jenga", scene_xml=_MODELS_DIR / "yam_jenga_scene.xml"),
+    SceneTaskSpec(
+        name="stack_tallest_tower",
+        scene_xml=_MODELS_DIR / "yam_stack_tallest_tower_scene.xml",
+    ),
     SceneTaskSpec(name="building_blocks", scene_xml=_MODELS_DIR / "yam_building_blocks_scene.xml"),
     SceneTaskSpec(name="sweep", scene_xml=_MODELS_DIR / "yam_sweep_scene.xml"),
     SceneTaskSpec(name="nuts_bolts_sorting", scene_xml=_MODELS_DIR / "yam_nuts_bolts_sorting_scene.xml"),

@@ -328,6 +328,17 @@ _TASK_SPECS: tuple[SimTaskSpec, ...] = (
         aliases=("sim_set_up_chess_pieces_on_the_board", "chess"),
     ),
     SimTaskSpec(
+        name="stack_tallest_tower",
+        env_task="stack_tallest_tower",
+        prompt=(
+            "Build the tallest stable tower you can using all the available blocks. "
+            "The tower must remain standing after you let go."
+        ),
+        description="Stack all four mixed-shape blocks into one released, stable tower.",
+        evaluator_name="stack_tallest_tower",
+        aliases=("stack tower", "tallest tower", "stack tallest tower"),
+    ),
+    SimTaskSpec(
         name="build_wood_block_tower",
         env_task="building_blocks",
         prompt="build a wood block tower",

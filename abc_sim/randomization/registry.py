@@ -20,6 +20,7 @@ from .tasks.pour import PourRandomizer
 from .tasks.put_relative import PutRelativeRandomizer
 from .tasks.sorting import LegoBlocksSortingRandomizer, NutsBoltsSortingRandomizer
 from .tasks.sweep import SweepRandomizer
+from .tasks.tower import StackTallestTowerRandomizer
 
 _WATER_BOTTLE_RANDOMIZER = WaterBottleRandomizer()
 
@@ -45,6 +46,7 @@ TASK_RANDOMIZERS: dict[str, SceneRandomizer] = {
     "multi_drawer_search": MultiDrawerSearchRandomizer(),
     "nuts_bolts_sorting": NutsBoltsSortingRandomizer(),
     "lego_blocks_sorting": LegoBlocksSortingRandomizer(),
+    "stack_tallest_tower": StackTallestTowerRandomizer(),
     # "empty": no free-jointed objects to randomize
 }
 

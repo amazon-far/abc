@@ -24,6 +24,7 @@ from abc_sim.task_eval.pour import PourBeadsInContainerEvaluator
 from abc_sim.task_eval.put_relative import PutRelativeEvaluator
 from abc_sim.task_eval.spell import SpellWordEvaluator
 from abc_sim.task_eval.sweep import SweepAwayEvaluator
+from abc_sim.task_eval.tower import StackTallestTowerEvaluator
 from abc_sim.task_specs import SimTaskSpec, maybe_get_task_spec
 
 TaskEvaluatorFactory: TypeAlias = type[TaskEvaluator]
@@ -48,6 +49,7 @@ _TASK_EVALUATORS: dict[str, TaskEvaluatorFactory] = {
     "pour_beads_in_container": PourBeadsInContainerEvaluator,
     "put_relative": PutRelativeEvaluator,
     "spell_word": SpellWordEvaluator,
+    "stack_tallest_tower": StackTallestTowerEvaluator,
 }
 
 

@@ -11,6 +11,7 @@ task randomization, and new sim environments all work from this package alone.
 - [Environment API](#environment-api)
 - [Step vs Step Chunk](#step-vs-step-chunk)
 - [Tasks and Randomization](#tasks-and-randomization)
+- [Four-block tower task](#four-block-tower-task)
 - [Rewards and Success](#rewards-and-success)
 - [Sim Eval](#sim-eval)
   - [Eval flags](#eval-flags)
@@ -148,6 +149,55 @@ randomization = info["randomization"]
 `randomization` contains the sampled world metadata needed for replay or fixed
 eval sets. Passing `randomize=False` resets the scene without sampling a new
 world.
+
+## Four-block tower task
+
+`stack_tallest_tower` is a catalog task with a cuboid, two blue cubes, and a
+triangular red prism. Its prompt asks the policy to use all available blocks;
+it does not prescribe a stacking order. Seeded resets scatter the four pieces
+without changing their sizes or model topology.
+
+From a checkout containing this task, install dependencies with `uv sync`, then:
+
+```bash
+# Downloads only the existing YAM robot meshes; block geometry is in the XML.
+uv run prepare.py --sim-task stack_tallest_tower
+
+# CPU smoke test; holds the initial arm pose rather than solving the task.
+uv run python abc_sim/example_api_rollout.py --task stack_tallest_tower
+
+# Run your own compatible checkpoint in the policy viewer or evaluator.
+uv run viz_policy.py --sim.task stack_tallest_tower --sim.checkpoint /path/to/checkpoint.pt
+uv run eval_policy.py --task stack_tallest_tower --checkpoint /path/to/checkpoint.pt --num-worlds 1
+```
+
+No tower-specific pretrained checkpoint or demonstration dataset is included.
+The task is available through `abc_sim.list_task_specs()` and
+`abc_sim.make_env(task="stack_tallest_tower")`; catalog-driven clients can
+select it without a registration wrapper.
+
+**Success requires all four blocks in one table-supported tower, both grippers
+released, and five continuous simulation seconds of stability.** A two- or
+three-block tower, two separate towers, or a tower touching the robot or a wall
+cannot pass. Support uses upward-facing MuJoCo contacts, not just proximity.
+Both grippers must be at least 60% open. During the five-second window, every
+block must remain within 3 mm and 5 degrees of its starting pose. Losing support,
+closing either gripper, or exceeding the drift tolerance clears success and
+starts a new window once the conditions hold again. Repeated evaluation reads
+at the same timestamp do not advance it. Metrics report `num_blocks_in_tower`,
+`released`, and `stable_seconds`.
+
+The single-world API reads `MjData.time`; batched evaluation uses each MJWarp
+world's simulation time. Custom callers must pass timestamps to
+`evaluate_timed_qpos_batch(qpos, simulation_time)`; scoring bare poses cannot
+establish a five-second dwell. Sample throughout execution to detect a collapse
+or regrasp between observations.
+
+Run the focused CPU regression suite after preparing the assets:
+
+```bash
+uv run python -m unittest discover -s tests -p 'test_stack_tallest_tower.py' -v
+```
 
 ## Rewards and Success
 

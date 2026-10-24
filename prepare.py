@@ -121,6 +121,7 @@ SIM_TASK_PACKAGES = {
     "conveyor_pick": ("task_conveyor_pick",),
     # The box and the counted cubes are primitive geoms; the arm meshes are enough.
     "count_into_opaque_box": (),
+    "stack_tallest_tower": (),
     "put_relative": ("task_put_relative",),
     "mug_tree": ("mug", "mug_tree", "task_mug_tree"),
     "pour": ("cup_stacking", "mug"),

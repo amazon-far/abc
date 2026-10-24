@@ -16,6 +16,7 @@ from abc_sim.rendering.replay.renderer import (
     WarpReplayRuntime,
 )
 from abc_sim.task_eval import TaskEvalResult, make_task_evaluator
+from abc_sim.task_eval.base import evaluate_task_batch
 
 # Compiled geometry every world in a batch must agree on.
 SHARED_MODEL_FIELDS = (
@@ -231,7 +232,9 @@ class BatchedWarpYAMEnv:
         """
         keys = None
         for width in (self.num_worlds + 1, self.num_worlds + 2):
-            result = self._evaluator.evaluate_qpos_batch(np.repeat(self.qpos[:1], width, axis=0))
+            result = evaluate_task_batch(
+                self._evaluator, np.repeat(self.qpos[:1], width, axis=0), np.zeros(width)
+            )
             found = {
                 key
                 for key, value in result.metrics.items()
@@ -261,7 +264,9 @@ class BatchedWarpYAMEnv:
     def evaluate(self) -> TaskEvalResult | None:
         if self._evaluator is None:
             return None
-        return self._evaluator.evaluate_qpos_batch(self.qpos)
+        return evaluate_task_batch(
+            self._evaluator, self.qpos, self._runtime.d_warp.time.numpy()
+        )
 
     def state(self) -> np.ndarray:
         return project_policy_state_batch(
